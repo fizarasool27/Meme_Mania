@@ -32,14 +32,9 @@ class CreateMemeViewController: UIViewController, UIImagePickerControllerDelegat
         shareButton.isEnabled = false
         imagePicker.delegate = self
         imagePicker.allowsEditing = true
-        topTextField.delegate = self
-        bottomTextField.delegate = self
-        topTextField.text = "TOP"
-        bottomTextField.text = "BOTTOM"
         
         setupTextField(tf: topTextField, text: "TOP")
         setupTextField(tf: bottomTextField, text: "BOTTOM")
-        
   
     }
     
@@ -121,44 +116,39 @@ class CreateMemeViewController: UIViewController, UIImagePickerControllerDelegat
         if activeTextField == topTextField {
             if topTextField.text == "TOP" {
                 topTextField.text = ""
-            } else {
-                topTextField.text = topTextField.text
             }
         }
         
         if activeTextField == bottomTextField {
             if bottomTextField.text == "BOTTOM" {
                 bottomTextField.text = ""
-            } else {
-                bottomTextField.text = bottomTextField.text
             }
         }
+        
     }
     
     func textFieldShouldReturn(_ textField: UITextField) -> Bool {
         textField.resignFirstResponder()
-        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: .UIKeyboardWillHide, object: nil)
         return true
     }
     
     //MARK :- Notifying when the keyboard appears and disappears
     func subscribeToKeyboardNotifications() {
         NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillShow(_ :)), name: .UIKeyboardWillShow, object: nil)
+        NotificationCenter.default.addObserver(self, selector: #selector(keyboardWillHide(_:)), name: .UIKeyboardWillHide, object: nil)
     }
     
     func unsubscribeToKeyboardNotifications() {
-        NotificationCenter.default.removeObserver(self, name: .UIKeyboardWillShow, object: nil)
         
+        NotificationCenter.default.removeObserver(self, name: .UIKeyboardWillShow, object: nil)
+        NotificationCenter.default.removeObserver(self, name: .UIKeyboardWillHide, object: nil)
     }
     
     //MARK :- When the keyboardWillShow notification is received, shift the view's frame up
     @objc func keyboardWillShow(_ notification : Notification) {
         
-        if activeTextField == topTextField {
-            return
-        }
-        else {
-          view.frame.origin.y -= getKeyBoardHeight(notification)
+        if (bottomTextField.isEditing) {
+            view.frame.origin.y -= getKeyBoardHeight(notification)
         }
         
     }
@@ -175,7 +165,6 @@ class CreateMemeViewController: UIViewController, UIImagePickerControllerDelegat
         
     }
     
-    
     //MARK :- Saving the memed image
     
     func generateMemedImage() -> UIImage {
@@ -189,9 +178,6 @@ class CreateMemeViewController: UIViewController, UIImagePickerControllerDelegat
         view.drawHierarchy(in: self.view.frame, afterScreenUpdates: true)
         let memedImage:UIImage = UIGraphicsGetImageFromCurrentImageContext()!
         UIGraphicsEndImageContext()
-        
-        self.navigationController?.navigationBar.isHidden = true
-        self.navigationController?.isToolbarHidden = true
         
         
         return memedImage
@@ -208,10 +194,13 @@ class CreateMemeViewController: UIViewController, UIImagePickerControllerDelegat
         let shareController = UIActivityViewController(activityItems: [memeImage], applicationActivities: nil)
         present(shareController, animated: true, completion: nil)
         
-        if (shareController.completionWithItemsHandler != nil) {
-        
-            _ = Meme(topText: self.topTextField.text!, bottomText: self.bottomTextField.text!, originalImage : self.pickedImage.image!, memedImage: self.memeImage)
-        
+        shareController.completionWithItemsHandler = {(activity, completed, items, error) in
+            if (completed){
+                //save meme
+                 _ = Meme(topText: self.topTextField.text!, bottomText: self.bottomTextField.text!, originalImage : self.pickedImage.image!, memedImage: self.memeImage)
+            }
+            //Dismiss the shareActivityViewController
+            self.dismiss(animated: true, completion: nil)
         }
         
         
