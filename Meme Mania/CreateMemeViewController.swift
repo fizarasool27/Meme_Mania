@@ -52,20 +52,6 @@ class CreateMemeViewController: UIViewController, UIImagePickerControllerDelegat
         tf.text = text
         tf.delegate = self
     }
-    //        let memeTextAttributes : [String : Any]? = [
-    //            NSAttributedStringKey.font.rawValue : UIFont(name: "HelveticaNeue-CondensedBlack", size: 38)!
-    //        ]
-    //
-    //        topTextField.defaultTextAttributes = memeTextAttributes!
-    //        topTextField.textAlignment = .center
-    //        topTextField.textColor = UIColor.white
-    //        topTextField.backgroundColor = UIColor.clear
-    //        topTextField.borderStyle = .none
-    //        bottomTextField.defaultTextAttributes = memeTextAttributes!
-    //        bottomTextField.textAlignment = .center
-    //        bottomTextField.textColor = UIColor.white
-    //        bottomTextField.backgroundColor = UIColor.clear
-    //        bottomTextField.borderStyle = .none
     
     override func viewWillAppear(_ animated: Bool) {
         super.viewWillAppear(animated)
@@ -104,11 +90,6 @@ class CreateMemeViewController: UIViewController, UIImagePickerControllerDelegat
     }
     
     //MARK : - Text Field Delegate methods
-    
-    //    func textFieldShouldBeginEditing(_ textField: UITextField) -> Bool {
-    //        activeTextField = textField
-    //        return true
-    //    }
     
     
     func textFieldDidBeginEditing(_ textField: UITextField) {
@@ -194,7 +175,12 @@ class CreateMemeViewController: UIViewController, UIImagePickerControllerDelegat
         shareController.completionWithItemsHandler = {(activity, completed, items, error) in
             if (completed){
                 //save meme
-                _ = Meme(topText: self.topTextField.text!, bottomText: self.bottomTextField.text!, originalImage : self.pickedImage.image!, memedImage: self.memeImage)
+                let meme = Meme(topText: self.topTextField.text!, bottomText: self.bottomTextField.text!, originalImage : self.pickedImage.image!, memedImage: self.memeImage)
+                
+                let object = UIApplication.shared.delegate
+                let appDelegate = object as! AppDelegate
+                appDelegate.memes.append(meme)
+                
             }
             //Dismiss the shareActivityViewController
             self.dismiss(animated: true, completion: nil)
